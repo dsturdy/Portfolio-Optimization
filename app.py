@@ -687,7 +687,11 @@ def main() -> None:
             )
         )
 
-        st.markdown("**Current vs static optimized**")
+        st.markdown(
+        "**Current vs Static Optimized "
+        "(optimized once on the selected history)**"
+        )
+
         st.plotly_chart(fig_static, use_container_width=True)
 
         # -------- Chart 2: Current vs rolling optimized --------------
@@ -722,7 +726,11 @@ def main() -> None:
             )
         )
 
-        st.markdown("**Current vs rolling optimized**")
+        st.markdown(
+            f"**Current vs Rolling Optimized "
+            f"(re-optimized every rebalance using last {rolling_lookback} months)**"
+        )
+
         st.plotly_chart(fig_rolling, use_container_width=True)
 
 
