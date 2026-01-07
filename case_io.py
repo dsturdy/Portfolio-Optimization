@@ -216,7 +216,15 @@ def load_investable_universe_from_case(case_path: Path) -> pd.DataFrame:
 
     # Clean
     sub["Ticker"] = sub["Ticker"].astype(str).str.strip().str.upper()
-    sub["AssetGroup"] = sub[asset_col_name].astype(str).str.strip()
+    # Clean asset group + rename categories if desired
+    sub["AssetGroup"] = (
+        sub[asset_col_name]
+        .astype(str)
+        .str.strip()
+        .replace({
+            "Allocation": "Balanced / Allocation",
+        })
+    )
 
     # Drop duplicates on ticker
     sub = sub[["Ticker", "AssetGroup"]].drop_duplicates(subset=["Ticker"]).reset_index(drop=True)

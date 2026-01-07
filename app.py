@@ -236,6 +236,10 @@ def main() -> None:
         layout="wide",
     )
 
+    # --- persistent state for last optimization run ---
+    if "opt_results" not in st.session_state:
+        st.session_state.opt_results = None
+
     load_css()
 
     st.title("First Eagle – Portfolio Optimization Program")
@@ -256,10 +260,11 @@ def main() -> None:
     # ---------------------------------------------------------------
     st.sidebar.header("Optimization controls")
 
-    risk_profile = st.sidebar.selectbox(
+    risk_profile = st.sidebar.radio(
         "Risk profile",
         ["Conservative", "Moderate", "Aggressive"],
         index=1,
+        horizontal=True
     )
 
     objective = st.sidebar.radio(
@@ -287,14 +292,14 @@ def main() -> None:
     # Fixed lookback (capped by available history) – tweak DEFAULT_LOOKBACK_MONTHS above
     lookback_months = min(DEFAULT_LOOKBACK_MONTHS, max_months)
 
-
     turnover_budget = st.sidebar.slider(
         "Reallocation limit",
-        0.0,
-        1.00,
-        0.15,
-        step=0.01,
-    )
+        0,
+        100,
+        15,
+        step=1,
+        format="%d%%"
+    ) / 100  # Convert back to decimal for calculations
 
     with st.sidebar.expander("Advanced constraints"):
 
@@ -375,6 +380,11 @@ def main() -> None:
     # ---------------------------------------------------------------
     # Optimization section (after button click)
     # ---------------------------------------------------------------
+    # Create a place in session_state to store the latest optimization results
+    if "opt_results" not in st.session_state:
+        st.session_state.opt_results = None
+
+    # 1) RUN the optimizer only when the button is clicked
     if run_clicked:
         try:
             with st.spinner("Solving optimization problem..."):
@@ -388,7 +398,19 @@ def main() -> None:
                     include_short_duration_credit=include_short_credit,
                     window=window,
                 )
-        except RuntimeError as e:
+
+            # Cache results from this run so they persist on reruns
+            st.session_state.opt_results = {
+                "weights": weights,
+                "summary": summary,
+                "comp": comp,
+                # optional: keep context of the run
+                "risk_profile": risk_profile,
+                "objective": objective,
+                "window": window,
+            }
+
+        except RuntimeError:
             st.error(
                 "The optimization was infeasible with your current settings.\n\n"
                 "Try relaxing one or more of:\n"
@@ -401,6 +423,13 @@ def main() -> None:
             st.error(f"Unexpected error while solving the optimization: {e}")
             st.stop()
 
+    # 2) DISPLAY whatever results we currently have
+    results = st.session_state.opt_results
+
+    if results is not None:
+        weights = results["weights"]
+        summary = results["summary"]
+        comp = results["comp"]
 
         st.subheader("Optimized portfolio")
 
