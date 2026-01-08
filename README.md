@@ -19,7 +19,7 @@ At a high level, the workflow is:
    - investable universe
    - asset-group classifications and constraint bands
 
-2. **Build a spliced return history** for funds with short live histories
+2. **Build a spliced return history** for funds with short lived histories
    - ETF proxies and proxy blends are defined ahead of time (ex-ante) based on economic exposure,
      not selected after observing performance
    - the best proxy is selected using historical correlation and data coverage
@@ -32,7 +32,7 @@ At a high level, the workflow is:
 4. **Run a constrained mean–variance optimizer**
    - formulated as a convex optimization problem
    - solved using `cvxpy` (Convex Optimization in Python)
-   - all constraints are explicit, rule-based, and reproducible
+   - all constraints are explicit, rules-based, and reproducible
 
 5. **Visualize outputs in a small UI**
    - current vs optimized portfolio allocations
@@ -41,7 +41,7 @@ At a high level, the workflow is:
 
 ---
 
-## Repo layout
+## Repository layout
 
 - `case_inputs.xlsx`  
   Case file provided by First Eagle.
@@ -50,7 +50,7 @@ At a high level, the workflow is:
   Constructs the historical return dataset used by the optimizer:
   - downloads adjusted price data via `yfinance`
   - constructs ETF and blended proxies
-  - selects the best proxy using correlation and history coverage
+  - selects the best proxy using correlation and proxy data coverage
   - splices pre-inception history using a **first overlapping price ratio**
     (the proxy is scaled to exactly match the fund on the first shared date,
     then used to backfill earlier history)
