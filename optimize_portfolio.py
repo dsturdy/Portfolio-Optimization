@@ -114,12 +114,13 @@ Constraints:
        * Short-duration credit (FDUIX)
 
 Objectives:
-   - "min_var":
-       Minimize (λ · variance - expected return)
-   - "max_sharpe_like":
-       Minimize (λ · variance - excess return), where excess = μ - r_f
-
-All parameters are exposed to the UI (created with app.py)
+   - "risk_targeted":
+       Maximize μᵀw
+       Subject to wᵀΣw ≤ σ_target²
+       Maximize expected return while targeting a given portfolio volatility. 
+   - "risk_return_tradeoff":
+       Minimize λ·(wᵀΣw) − (μ − r_f·1)ᵀw
+       Balance excess return and variance using a weighted risk penalty.
 """
 
 def optimize_portfolio(
@@ -253,7 +254,7 @@ def optimize_portfolio(
             constraints.append(cp.sum(w[illiquid_idx]) <= illiquid_cap)
 
 
-    # Cash cap (SGOV / cash sleeve)
+    # Cash cap (SGOV)
     cash_idx = [
         i for i, t in enumerate(common_tickers)
         if TICKER_META.get(t, {}).get("asset_class") == "cash"
@@ -352,7 +353,7 @@ def optimize_portfolio(
         "Window": window,
         "RiskFreeAnnual": rf,
         "Lambda": lambda_val,  # None for risk_targeted
-        "TargetVol": target_vol,  # None for max_sharpe_like
+        "TargetVol": target_vol,  # None for risk_return_tradeoff
     }
 
     comp = pd.DataFrame(
@@ -373,12 +374,12 @@ def optimize_portfolio(
 
 
 # ---------------------------------------------------------------------
-# REUSE OPTIMIZER ON ARBITRARY MONTHLY RETURN PANELS
+# REUSE OPTIMIZER FOR HISTORICAL BACKTESTING
 # ---------------------------------------------------------------------
 def run_optimizer_on_returns(
     rets: pd.DataFrame,
     risk_profile: str = "Moderate",
-    objective: str = "min_var",
+    objective: str | None = None,
     equity_cap: float | None = None,
     illiquid_cap: float | None = None,
     turnover_budget: float | None = 0.30,
@@ -414,8 +415,6 @@ def run_optimizer_on_returns(
         load_spliced_returns = orig_loader
 
     return w, summary
-
-
 
 # ---------------------------------------------------------------------
 # REBALANCE INDEX HELPER (MONTHLY DATE INDEX)
@@ -608,8 +607,6 @@ def backtest_quarterly_daily(
             include_short_duration_credit=include_short_duration_credit,
         )
         return w_opt.reindex(tickers).fillna(0.0)
-
-
 
     # Ensure month + day rebalance lists have same length
     if len(rebalance_daily_ixs) != len(rebalance_month_ixs):
