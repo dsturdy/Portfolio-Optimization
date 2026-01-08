@@ -479,13 +479,13 @@ def main() -> None:
                     ),
                 ]
 
-                # 👇 show λ ONLY when we're using the λ-weighted objective
+                # show lambda only when we're using the lambda-weighted objective
                 if summary.get("Lambda") is not None:
                     cons_rows.append(
                         ("Risk aversion (λ)", f"{summary['Lambda']:.2f}")
                     )
 
-                # 👇 show target volatility ONLY for risk-targeted objective
+                # show target volatility only for risk-targeted objective
                 if summary.get("TargetVol") is not None:
                     cons_rows.append(
                         ("Target volatility", f"{summary['TargetVol']:.2%}")
