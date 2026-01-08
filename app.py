@@ -479,7 +479,7 @@ def main() -> None:
                     ),
                 ]
 
-                # show lambda only when we're using the lambda-weighted objective
+                # show λ only when we're using the λ-weighted objective
                 if summary.get("Lambda") is not None:
                     cons_rows.append(
                         ("Risk aversion (λ)", f"{summary['Lambda']:.2f}")
@@ -769,6 +769,18 @@ def main() -> None:
             "Adjust the controls in the sidebar and click **Run optimization** "
             "to generate recommended allocations."
         )
+    # -----------------------------------------------------------
+    # Footer / attribution
+    # -----------------------------------------------------------
+    st.markdown(
+        "<hr style='margin-top: 2rem; margin-bottom: 0.5rem;'>"
+        "<div style='text-align: right; color: #6B7280; font-size: 0.85rem;'>"
+        "Conceptual proof – Asset Allocation Optimization Program<br>"
+        "Built by Dylan Sturdevant"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
 
 
 if __name__ == "__main__":
